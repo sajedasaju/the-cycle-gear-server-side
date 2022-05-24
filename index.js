@@ -45,6 +45,10 @@ async function run() {
         //ALL COLLECTION
         //1 ) uer collection
         const usersCollection = client.db("cycle_gear").collection('users');
+        //2 ) tools collection
+        const toolsCollection = client.db("cycle_gear").collection('tools');
+
+
 
         //middletare
         const verifyAdmin = async (req, res, next) => {
@@ -66,7 +70,7 @@ async function run() {
             res.send(users)
         })
 
-
+        //PUT USER
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -106,6 +110,20 @@ async function run() {
             const isAdmin = user.role === 'admin'
             res.send({ admin: isAdmin })
 
+        })
+
+        //Post all added tools
+        //http://localhost:5000/tool
+        app.post('/tool', verifyJWT, verifyAdmin, async (req, res) => {
+            const tool = req.body;
+            const result = await toolsCollection.insertOne(tool);
+            res.send(result);
+        })
+        //get all added tools
+        //http://localhost:5000/tool
+        app.get('/tool', async (req, res) => {
+            const tools = await toolsCollection.find().toArray()
+            res.send(tools)
         })
 
 
