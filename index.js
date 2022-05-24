@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const port = process.env.PORT || 5000
@@ -47,6 +47,8 @@ async function run() {
         const usersCollection = client.db("cycle_gear").collection('users');
         //2 ) tools collection
         const toolsCollection = client.db("cycle_gear").collection('tools');
+        //3 ) orders collection
+        const ordersCollection = client.db("cycle_gear").collection('orders');
 
 
 
@@ -65,7 +67,7 @@ async function run() {
 
         //find all users 
         //http://localhost:5000/user
-        app.get('/user', verifyJWT, async (req, res) => {
+        app.get('/user', verifyJWT, verifyAdmin, async (req, res) => {
             const users = await usersCollection.find().toArray()
             res.send(users)
         })
@@ -124,6 +126,30 @@ async function run() {
         app.get('/tool', async (req, res) => {
             const tools = await toolsCollection.find().toArray()
             res.send(tools)
+        })
+
+        //get single tool 
+        //http://localhost:5000/tool
+        app.get('/tool/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) };
+            const tool = await toolsCollection.findOne(query);
+
+            res.send(tool)
+        })
+
+
+        //Post or add order to order collection
+        app.post('/order', verifyJWT, async (req, res) => {
+            const order = req.body;
+            const result = await ordersCollection.insertOne(order);
+            res.send(result);
+        })
+
+        //get all orders
+        app.get('/order', async (req, res) => {
+            const orders = await ordersCollection.find().toArray()
+            res.send(orders)
         })
 
 
