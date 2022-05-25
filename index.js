@@ -152,16 +152,26 @@ async function run() {
         //get  orders by email
         app.get('/order', verifyJWT, async (req, res) => {
             const reqEmail = req.query.email
-            // const decodedEmail = req.decoded.email
-            // if (patient == decodedEmail) {
-            // console.log(patient)
-            const query = { email: reqEmail }
-            const bookings = await ordersCollection.find(query).toArray();
-            res.send(bookings)
-            // }
-            // else {
-            //     return res.status(403).send({ message: "Forbidden access" })
-            // }
+            const decodedEmail = req.decoded.email
+            if (reqEmail == decodedEmail) {
+                // console.log(patient)
+                const query = { email: reqEmail }
+                const orders = await ordersCollection.find(query).toArray();
+                res.send(orders)
+            }
+            else {
+                return res.status(403).send({ message: "Forbidden access" })
+            }
+
+        })
+
+        //particular id wise orders for payment
+        app.get('/order/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) };
+            const order = await ordersCollection.findOne(query);
+
+            res.send(order)
 
         })
 
