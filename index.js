@@ -31,6 +31,7 @@ function verifyJWT(req, res, next) {
 
         }
         req.decoded = decoded
+        console.log(req.decoded)
         next();
     });
 
@@ -146,12 +147,23 @@ async function run() {
             res.send(result);
         })
 
-        //get all orders
-        app.get('/order', async (req, res) => {
-            const orders = await ordersCollection.find().toArray()
-            res.send(orders)
-        })
 
+
+        //get  orders by email
+        app.get('/order', verifyJWT, async (req, res) => {
+            const reqEmail = req.query.email
+            // const decodedEmail = req.decoded.email
+            // if (patient == decodedEmail) {
+            // console.log(patient)
+            const query = { email: reqEmail }
+            const bookings = await ordersCollection.find(query).toArray();
+            res.send(bookings)
+            // }
+            // else {
+            //     return res.status(403).send({ message: "Forbidden access" })
+            // }
+
+        })
 
 
 
