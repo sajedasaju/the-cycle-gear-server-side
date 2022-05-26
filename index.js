@@ -51,8 +51,10 @@ async function run() {
         const toolsCollection = client.db("cycle_gear").collection('tools');
         //3 ) orders collection
         const ordersCollection = client.db("cycle_gear").collection('orders');
-        //3 ) payment collection
+        //4 ) payment collection
         const paymentCollection = client.db("cycle_gear").collection('payments');
+        //5 ) payment collection
+        const reviewCollection = client.db("cycle_gear").collection('reviews');
 
 
 
@@ -168,14 +170,14 @@ async function run() {
 
 
         //get  orders by email
-        app.get('/order', verifyJWT, async (req, res) => {
+        app.get('/order', async (req, res) => {
             const reqEmail = req.query.email
             const decodedEmail = req.decoded.email
             if (reqEmail == decodedEmail) {
 
                 const query = { email: reqEmail }
                 const orders = await ordersCollection.find(query).toArray();
-                res.send(orders)
+                return res.send(orders)
             }
             else {
                 return res.status(403).send({ message: "Forbidden access" })
@@ -209,6 +211,35 @@ async function run() {
             res.send(updateDoc)
 
         })
+
+        //cancel or delete order
+        //http://localhost:5000/order/:id
+
+        app.delete('/order/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await ordersCollection.deleteOne(query)
+            res.send(result)
+        })
+
+
+
+        //Post or add review to review collection
+        //http://localhost:5000/review
+        app.post('/review', verifyJWT, async (req, res) => {
+            const review = req.body;
+            console.log(review)
+            const result = await reviewCollection.insertOne(review);
+            res.send(result);
+        })
+
+        app.post('/review', async (req, res) => {
+            const order = req.body;
+            const result = await reviewCollection.insertOne(order);
+            res.send(result);
+        })
+
+
 
 
 
