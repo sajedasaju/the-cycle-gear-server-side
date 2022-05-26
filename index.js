@@ -240,6 +240,15 @@ async function run() {
         })
 
 
+        //get all added reviewa
+        //http://localhost:5000/review
+        app.get('/review', async (req, res) => {
+            const reviews = await reviewCollection.find().toArray()
+            res.send(reviews)
+        })
+
+
+
 
 
 
