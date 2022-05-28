@@ -86,12 +86,62 @@ async function run() {
         })
 
 
+        app.get('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = await usersCollection.findOne({ email: email })
+            res.send(user)
+
+        })
+
+        // app.get('/user',verifyJWT, async (req, res) => {
+        //     const reqEmail = req.query.email
+        //     const decodedEmail = req.decoded.email
+        //     if (reqEmail == decodedEmail) {
+
+        //         const query = { email: reqEmail }
+        //         const user = await usersCollection.findOne(query).toArray();
+        //         return res.send(orders)
+        //     }
+        //     else {
+        //         return res.status(403).send({ message: "Forbidden access" })
+        //     }
+
+        // })
+
+
         //find all users 
         //http://localhost:5000/user
         app.get('/user', verifyJWT, verifyAdmin, async (req, res) => {
             const users = await usersCollection.find().toArray()
             res.send(users)
         })
+
+
+        //PATCH USER
+        app.patch('/user/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) };
+            const user = req.body;
+            console.log(user)
+
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    // displayName: user.name,
+                    // email: user.email,
+                    phone: user.phone,
+                    city: user.city,
+                    district: user.district,
+                    education: user.education,
+                    linkedin: user.linkedin,
+                }
+            };
+            const result = await usersCollection.updateOne(query, updateDoc, options);
+            res.send(result)
+
+        })
+
+
 
         //PUT USER
         app.put('/user/:email', async (req, res) => {
@@ -117,6 +167,8 @@ async function run() {
 
             const filter = { email: email };
             const updateDoc = {
+                paid: true,
+                transactionId: payment.transectionId,
                 $set: { role: 'admin' }
             };
             const result = await usersCollection.updateOne(filter, updateDoc);
@@ -167,6 +219,13 @@ async function run() {
             res.send(result);
         })
 
+        //get all order
+        //http://localhost:5000/order
+        app.get('/order', verifyJWT, async (req, res) => {
+            const orders = await ordersCollection.find().toArray()
+            res.send(orders)
+        })
+
 
 
         //get  orders by email
@@ -199,11 +258,14 @@ async function run() {
         app.patch('/order/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const payment = req.body
+            console.log(payment)
             const filter = { _id: ObjectId(id) };
             const updateDoc = {
                 $set: {
                     paid: true,
-                    transactionId: payment.transectionId
+                    transactionId: payment.transectionId,
+                    // status: false,
+                    // shipped: payment.shipped
                 }
             };
             const updatedOrder = await ordersCollection.updateOne(filter, updateDoc)
@@ -211,6 +273,24 @@ async function run() {
             res.send(updateDoc)
 
         })
+
+        app.put('/order/:id', async (req, res) => {
+            const id = req.params.id;
+            const order = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: { pandingChange: 'shipped' }
+            };
+            const result = await ordersCollection.updateOne(filter, updateDoc, options);
+
+            res.send(result)
+
+        })
+
+
+
+
 
         //cancel or delete order
         //http://localhost:5000/order/:id
@@ -246,6 +326,18 @@ async function run() {
             const reviews = await reviewCollection.find().toArray()
             res.send(reviews)
         })
+
+
+        //cancel or delete tool
+        //http://localhost:5000/tool/:id
+
+        app.delete('/tool/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await toolsCollection.deleteOne(query)
+            res.send(result)
+        })
+
 
 
 
