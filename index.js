@@ -111,7 +111,12 @@ async function run() {
 
         //find all users 
         //http://localhost:5000/user
-        app.get('/user', verifyJWT, verifyAdmin, async (req, res) => {
+        // app.get('/user', verifyJWT, async (req, res) => {
+        //     const users = await userCollection.find().toArray();
+        //     res.send(users);
+        // })
+
+        app.get('/alluser', verifyJWT, async (req, res) => {
             const users = await usersCollection.find().toArray()
             res.send(users)
         })
@@ -167,8 +172,8 @@ async function run() {
 
             const filter = { email: email };
             const updateDoc = {
-                paid: true,
-                transactionId: payment.transectionId,
+                // paid: true,
+                // transactionId: payment.transectionId,
                 $set: { role: 'admin' }
             };
             const result = await usersCollection.updateOne(filter, updateDoc);
@@ -219,30 +224,42 @@ async function run() {
             res.send(result);
         })
 
-        //get all order
-        //http://localhost:5000/order
-        app.get('/order', verifyJWT, async (req, res) => {
-            const orders = await ordersCollection.find().toArray()
-            res.send(orders)
-        })
 
 
 
         //get  orders by email
-        app.get('/order', async (req, res) => {
-            const reqEmail = req.query.email
-            const decodedEmail = req.decoded.email
-            if (reqEmail == decodedEmail) {
 
-                const query = { email: reqEmail }
+        // app.get('/order', verifyJWT, async (req, res) => {
+        //     const reqEmail = req.query.email
+        //     const decodedEmail = req.decoded.email
+        //     if (reqEmail === decodedEmail) {
+
+        //         const query = { email: reqEmail }
+        //         const orders = await ordersCollection.find(query).toArray();
+        //         return res.send(orders)
+        //     }
+        //     else {
+        //         return res.status(403).send({ message: "Forbidden access" })
+        //     }
+
+        // })
+
+        app.get('/order', verifyJWT, async (req, res) => {
+            const orderEmail = req.query.email;
+            const decodedEmail = req.decoded.email;
+            console.log('de', orderEmail)
+            console.log('or', orderEmail)
+            if (orderEmail === decodedEmail) {
+                const query = { email: orderEmail };
                 const orders = await ordersCollection.find(query).toArray();
-                return res.send(orders)
+                return res.send(orders);
             }
             else {
-                return res.status(403).send({ message: "Forbidden access" })
+                return res.status(403).send({ message: 'Forbidden access' });
             }
-
         })
+
+
 
         //particular id wise orders for payment
         app.get('/order/:id', async (req, res) => {
@@ -264,8 +281,7 @@ async function run() {
                 $set: {
                     paid: true,
                     transactionId: payment.transectionId,
-                    // status: false,
-                    // shipped: payment.shipped
+
                 }
             };
             const updatedOrder = await ordersCollection.updateOne(filter, updateDoc)
@@ -274,7 +290,7 @@ async function run() {
 
         })
 
-        app.put('/order/:id', async (req, res) => {
+        app.put('/manageorder/:id', async (req, res) => {
             const id = req.params.id;
             const order = req.body;
             const filter = { _id: ObjectId(id) };
@@ -291,6 +307,12 @@ async function run() {
 
 
 
+        //get all order
+        //http://localhost:5000/order
+        app.get('/manageorder', verifyJWT, async (req, res) => {
+            const orders = await ordersCollection.find().toArray()
+            res.send(orders)
+        })
 
         //cancel or delete order
         //http://localhost:5000/order/:id
